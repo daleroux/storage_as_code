@@ -1,0 +1,25 @@
+---
+- hosts: all
+
+  tasks:
+    - name: Define web_vg_disks
+      set_fact:
+        DL6_mirrorlogvg_disk: "sdb"
+
+    - name: Run storage role
+      vars:
+        storage_safe_mode: false
+        storage_pools:
+          - name: DL6_mirrorlogvg
+            disks: "{{ DL6_mirrorlogvg_disk }}"
+            volumes:
+              - name: oracle_DL6_mirrlogA_lv
+                size: "{{ oracle_DL6_mirrlogA_size  | default ('500MiB') }}"
+                # size: "{{ oracle_DL6_mirrlogA_size }}"
+                mount_point: "/oracle/DL6/mirrlogA"
+                fs_type: xfs
+                state: present
+      ansible.builtin.include_role:
+        name: redhat.rhel_system_roles.storage
+
+

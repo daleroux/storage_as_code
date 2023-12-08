@@ -1,0 +1,32 @@
+---
+- hosts: all
+
+  tasks:
+    - name: Define web_vg_disks
+      set_fact:
+        DL6_mirrorlogvg_disk: "sdb"
+
+    - name: Run storage role
+      vars:
+        storage_pools:
+          - name: DL6_mirrorlogvg
+            disks: "{{ DL6_mirrorlogvg_disk }}"
+            volumes:
+              - name: oracle_DL6_mirrlogA_lv
+                size: 500MiB
+                mount_point: "/mirrlogA"
+                fs_type: ext4
+                state: absent
+
+      ansible.builtin.include_role:
+        name: redhat.rhel_system_roles.storage
+
+  post_tasks:
+    - name: remove the volume group
+      ansible.builtin.shell:
+        cmd: vgremove DL6_mirrorlogvg
+
+    - name: remove the physical volume
+      ansible.builtin.shell:
+        cmd: pvremove "/dev/{{ DL6_mirrorlogvg_disk }}"
+      
